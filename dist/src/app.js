@@ -20,9 +20,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDirectoryPath = path.join(__dirname, '../public');
 app.use(express.static(publicDirectoryPath));
+let count = 0;
 //io
-io.on('connection', (_socket) => {
+io.on('connection', (socket) => {
     console.log('New Web Socket connection!');
+    socket.emit('countUpdated', count);
+    socket.on('increment', () => {
+        count++;
+        io.emit('countUpdated', count);
+    });
 });
 server.listen(PORT, () => {
     console.log('listenin on port ' + PORT);
