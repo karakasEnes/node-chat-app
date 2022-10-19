@@ -5,7 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/src/app.js",
+    "watch-tsc": "npx tsc --watch",
+    "dev": "nodemon dist/src/app.js"
   },
   "keywords": [
     "chat"
