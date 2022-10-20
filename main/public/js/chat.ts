@@ -1,4 +1,7 @@
 declare const moment: any;
+declare const queryString: any;
+declare const io: any;
+declare const Qs: any;
 
 const socket = io();
 
@@ -8,30 +11,34 @@ const inputEl = document.querySelector('.input-form') as HTMLInputElement;
 const btnLocation = document.querySelector('.location') as HTMLButtonElement;
 const $messages = document.querySelector('.messages') as HTMLDivElement;
 
-const markupMaker = (isLink, obj) => {
-  const dateNew = moment(obj.createdAt).format('h:mm');
-  if (!isLink) {
+const { username, room } = Qs.parse(window.location.search, {
+  ignoreQueryPrefix: true,
+});
+
+const markupMaker = (isURL, messageObj) => {
+  const currentTime = moment(messageObj.createdAt).format('h:mm a');
+  if (!isURL) {
     return `
     <div>
-    ${dateNew} - ${obj.text}
+    ${currentTime} - ${messageObj.text}
     </div>
     `;
   }
 
   return `
   <div>
-    <a href="${obj.text}" target="_blank">Your Location</a>
+    ${currentTime} - <a href="${messageObj.text}" target="_blank">Your Location</a>
   </div>
   `;
 };
 
-socket.on('message', (obj) => {
-  const htmlMarkup = markupMaker(false, obj);
+socket.on('message', (messageObj) => {
+  const htmlMarkup = markupMaker(false, messageObj);
   $messages.insertAdjacentHTML('beforeend', htmlMarkup);
 });
 
-socket.on('locationMessage', (obj) => {
-  const htmlMarkup = markupMaker(true, obj);
+socket.on('locationMessage', (messageObj) => {
+  const htmlMarkup = markupMaker(true, messageObj);
   $messages.insertAdjacentHTML('beforeend', htmlMarkup);
 });
 
@@ -66,8 +73,10 @@ btnLocation.addEventListener('click', () => {
   window.navigator.geolocation.getCurrentPosition((pos) => {
     const urlLoc = `https://google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
 
-    socket.emit('sendLocation', urlLoc, (m) => {
+    socket.emit('sendLocation', urlLoc, () => {
       btnLocation.removeAttribute('disabled');
     });
   });
 });
+
+socket.emit('join', { username, room });

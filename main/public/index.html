@@ -10,19 +10,12 @@
 
 <body>
 
-  <div class="messages"></div>
-  <h1>Chat App</h1>
-
-  <form>
-    <input class="input-form" type="text">
-    <button class="btn-form">Send</button>
+  <form action="./chat.html">
+    <input name="username" placeholder="username" type="text" required>
+    <input name="room" placeholder="room name" type="text" required>
+    <button>JOIN</button>
   </form>
-  <button class="location">Send Location</button>
 
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
-  <script type="module" src="/js/chat.js"></script>
 </body>
 
 </html>

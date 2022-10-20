@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatApp</title>
+</head>
+
+<body>
+
+  <div class="messages"></div>
+  <h1>Chat App</h1>
+
+  <form>
+    <input class="input-form" type="text">
+    <button class="btn-form">Send</button>
+  </form>
+  <button class="location">Send Location</button>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.11.0/qs.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="/js/chat.js"></script>
+</body>
+
+</html>

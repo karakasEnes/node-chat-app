@@ -22,12 +22,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDirectoryPath = path.join(__dirname, '../public');
 app.use(express.static(publicDirectoryPath));
-let count = 0;
 //io
 io.on('connection', (socket) => {
     console.log('New Web Socket connection!');
-    socket.emit('message', generateMessage('Welcome to the SERVER!'));
-    socket.broadcast.emit('message', 'a new user joined');
     socket.on('sendMessage', (m, cb) => {
         const filter = new Filter();
         if (filter.isProfane(m)) {
@@ -41,7 +38,14 @@ io.on('connection', (socket) => {
     });
     socket.on('sendLocation', (url, cb) => {
         io.emit('locationMessage', generateMessage(url));
-        cb('Your location is shared successfully!');
+        cb();
+    });
+    socket.on('join', ({ username, room }) => {
+        socket.join(room);
+        socket.emit('message', generateMessage('Welcome to the SERVER!'));
+        socket.broadcast
+            .to(room)
+            .emit('message', generateMessage(`${username} has joined to the room!`));
     });
 });
 server.listen(PORT, () => {
