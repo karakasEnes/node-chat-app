@@ -10,6 +10,7 @@ import http from 'http';
 import * as socketio from 'socket.io';
 import Filter from 'bad-words';
 //file imports
+import { generateMessage } from './utils/messages.js';
 
 //express Setup
 const app: express.Application = express();
@@ -31,7 +32,7 @@ let count = 0;
 io.on('connection', (socket) => {
   console.log('New Web Socket connection!');
 
-  socket.emit('message', 'Welcome to the SERVER!');
+  socket.emit('message', generateMessage('Welcome to the SERVER!'));
 
   socket.broadcast.emit('message', 'a new user joined');
 
@@ -42,16 +43,16 @@ io.on('connection', (socket) => {
       return cb('The message contains profanity words.');
     }
 
-    io.emit('message', m);
+    io.emit('message', generateMessage(m));
     cb(undefined, 'Message revecived by server');
   });
 
   socket.on('disconnect', () => {
-    io.emit('message', 'a user has left');
+    io.emit('message', generateMessage('a user has left'));
   });
 
   socket.on('sendLocation', (url, cb) => {
-    io.emit('message', url);
+    io.emit('locationMessage', generateMessage(url));
     cb('Your location is shared successfully!');
   });
 });
