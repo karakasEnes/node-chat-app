@@ -24,10 +24,9 @@ let count = 0;
 //io
 io.on('connection', (socket) => {
     console.log('New Web Socket connection!');
-    socket.emit('countUpdated', count);
-    socket.on('increment', () => {
-        count++;
-        io.emit('countUpdated', count);
+    socket.emit('message', 'Welcome to the SERVER!');
+    socket.on('sendMessage', (m) => {
+        console.log(m);
     });
 });
 server.listen(PORT, () => {

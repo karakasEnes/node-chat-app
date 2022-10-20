@@ -1,12 +1,16 @@
+// import { io } from 'socket.io-client';
+
 const socket = io();
 
-socket.on('countUpdated', (count) => {
-  console.log('count updated from client side ' + count);
+socket.on('message', (m) => {
+  console.log(m);
 });
 
-const btnInc = document.querySelector('.btn-inc') as HTMLButtonElement;
+const form = document.querySelector('form') as HTMLFormElement;
+const inputEl = document.querySelector('.input-form') as HTMLInputElement;
 
-btnInc.addEventListener('click', () => {
-  console.log('btn cliked');
-  socket.emit('increment');
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const value = inputEl.value;
+  socket.emit('sendMessage', value);
 });
