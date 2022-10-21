@@ -11,7 +11,7 @@ import * as socketio from 'socket.io';
 import Filter from 'bad-words';
 //file imports
 import { generateMessage } from './utils/messages.js';
-
+import { getUser, addUser, getUsersInRoom, removeUser } from './utils/users.js';
 //express Setup
 const app: express.Application = express();
 const server = http.createServer(app);
@@ -31,6 +31,27 @@ app.use(express.static(publicDirectoryPath));
 io.on('connection', (socket) => {
   console.log('New Web Socket connection!');
 
+  socket.on('join', ({ username, room }, callback) => {
+    const { error, user } = addUser({ id: socket.id, username, room });
+
+    if (error) {
+      return callback(error);
+    }
+
+    socket.join(user.room);
+
+    socket.emit('message', generateMessage('Welcome to the SERVER!'));
+
+    socket.broadcast
+      .to(user.room)
+      .emit(
+        'message',
+        generateMessage(`${user.username} has joined to the room!`)
+      );
+
+    callback();
+  });
+
   socket.on('sendMessage', (m, cb) => {
     const filter = new Filter();
 
@@ -38,27 +59,24 @@ io.on('connection', (socket) => {
       return cb('The message contains profanity words.');
     }
 
-    io.emit('message', generateMessage(m));
+    io.to('test').emit('message', generateMessage(m));
     cb(undefined, 'Message revecived by server');
   });
 
   socket.on('disconnect', () => {
-    io.emit('message', generateMessage('a user has left'));
+    const user = removeUser(socket.id);
+
+    if (user) {
+      io.to(user.room).emit(
+        'message',
+        generateMessage(`${user.username} user has left`)
+      );
+    }
   });
 
   socket.on('sendLocation', (url, cb) => {
     io.emit('locationMessage', generateMessage(url));
     cb();
-  });
-
-  socket.on('join', ({ username, room }) => {
-    socket.join(room);
-
-    socket.emit('message', generateMessage('Welcome to the SERVER!'));
-
-    socket.broadcast
-      .to(room)
-      .emit('message', generateMessage(`${username} has joined to the room!`));
   });
 });
 

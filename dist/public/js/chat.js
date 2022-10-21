@@ -57,4 +57,10 @@ btnLocation.addEventListener('click', () => {
         });
     });
 });
-socket.emit('join', { username, room });
+socket.emit('join', { username, room }, (error) => {
+    if (error) {
+        console.log(error);
+        alert(error);
+        location.href = '/';
+    }
+});
