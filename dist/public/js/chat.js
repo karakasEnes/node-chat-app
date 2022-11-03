@@ -13,17 +13,17 @@ const markupMaker = (isURL, messageObj) => {
     const currentTime = moment(messageObj.createdAt).format('h:mm a');
     if (!isURL) {
         return `
-    <div>
-      <div class="username-text">${messageObj.username}</div>
-      <div class="message">${currentTime} - ${messageObj.text}</div>
+    <div class="single-message">
+      <div class="server-text">${messageObj.username} <span>${currentTime}</span> </div>
+      <div class="server-message">${messageObj.text}</div>
     </div>
     `;
     }
     return `
-  <div>
-      <div class="username-text">${messageObj.username}</div>
-      <div class="message">
-      ${currentTime} - <a href="${messageObj.text}" target="_blank">Your Location</a>
+  <div class="single-message">
+      <div class="server-text">${messageObj.username} <span>${currentTime}</span></div>
+      <div class="server-message">
+        <a href="${messageObj.text}" target="_blank">My Location</a>
       </div>
     
   </div>
@@ -34,6 +34,9 @@ const markupSideBar = (roomData) => {
     const roomEl = document.createElement('div');
     roomEl.classList.add('room');
     roomEl.innerHTML = room;
+    const userTitle = document.createElement('h1');
+    userTitle.classList.add('user-title');
+    userTitle.innerHTML = 'USERS';
     const usersEl = document.createElement('ul');
     usersEl.classList.add('users');
     users.forEach((user) => {
@@ -44,15 +47,35 @@ const markupSideBar = (roomData) => {
     });
     $sidebar.innerHTML = '';
     $sidebar.appendChild(roomEl);
+    $sidebar.appendChild(userTitle);
     $sidebar.appendChild(usersEl);
+};
+const autoscroll = () => {
+    // New message element
+    const $newMessage = $messages.lastElementChild;
+    // Height of the new message
+    const newMessageStyles = getComputedStyle($newMessage);
+    const newMessageMargin = parseInt(newMessageStyles.marginBottom);
+    const newMessageHeight = $newMessage.offsetHeight + newMessageMargin + 3;
+    // Visible height
+    const visibleHeight = $messages.offsetHeight;
+    // Height of messages container
+    const containerHeight = $messages.scrollHeight;
+    // How far have I scrolled?
+    const scrollOffset = $messages.scrollTop + visibleHeight;
+    if (containerHeight - newMessageHeight <= scrollOffset) {
+        $messages.scrollTop = $messages.scrollHeight;
+    }
 };
 socket.on('message', (messageObj) => {
     const htmlMarkup = markupMaker(false, messageObj);
     $messages.insertAdjacentHTML('beforeend', htmlMarkup);
+    autoscroll();
 });
 socket.on('locationMessage', (messageObj) => {
     const htmlMarkup = markupMaker(true, messageObj);
     $messages.insertAdjacentHTML('beforeend', htmlMarkup);
+    autoscroll();
 });
 socket.on('roomData', (roomData) => {
     markupSideBar(roomData);
@@ -66,9 +89,8 @@ form.addEventListener('submit', (e) => {
         inputEl.value = '';
         inputEl.focus();
         if (err) {
-            return console.log(err);
+            return err;
         }
-        console.log(message);
     });
 });
 btnLocation.addEventListener('click', () => {

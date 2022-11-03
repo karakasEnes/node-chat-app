@@ -6,20 +6,33 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ChatApp</title>
+  <link rel="stylesheet" href="./css/style.css">
 </head>
 
 <body>
 
-  <div class="sidebar"></div>
 
-  <div class="messages"></div>
-  <h1>Chat App</h1>
+  <div class="chat-wrapper">
+    <div class="sidebar"></div>
 
-  <form>
-    <input class="input-form" type="text" autocomplete="off" required>
-    <button class="btn-form">Send</button>
-  </form>
-  <button class="location">Send Location</button>
+    <div class="right-side-wrapper">
+      <div class="messages"></div>
+
+      <div class="form-wrapper">
+        <form id="form-chat">
+          <input class="input-form" type="text" autocomplete="off" required placeholder="type message">
+          <button class="btn-form">Send Message</button>
+        </form>
+        <button class="location">Share Location</button>
+
+      </div>
+    </div>
+
+  </div>
+
+
+
+
 
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
