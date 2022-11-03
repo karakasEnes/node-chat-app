@@ -40,13 +40,13 @@ io.on('connection', (socket) => {
 
     socket.join(user.room);
 
-    socket.emit('message', generateMessage('Welcome to the SERVER!'));
+    socket.emit('message', generateMessage('Welcome to the SERVER!', 'Server'));
 
     socket.broadcast
       .to(user.room)
       .emit(
         'message',
-        generateMessage(`${user.username} has joined to the room!`)
+        generateMessage(`${user.username} has joined to the room!`, 'Server')
       );
 
     callback();
@@ -59,8 +59,22 @@ io.on('connection', (socket) => {
       return cb('The message contains profanity words.');
     }
 
-    io.to('test').emit('message', generateMessage(m));
+    //setting for indivual room
+    const user = getUser(socket.id);
+
+    io.to(user.room).emit('message', generateMessage(m, user.username));
     cb(undefined, 'Message revecived by server');
+  });
+
+  socket.on('sendLocation', (url, cb) => {
+    //setting for indivual room
+    const user = getUser(socket.id);
+
+    io.to(user.room).emit(
+      'locationMessage',
+      generateMessage(url, user.username)
+    );
+    cb();
   });
 
   socket.on('disconnect', () => {
@@ -72,11 +86,6 @@ io.on('connection', (socket) => {
         generateMessage(`${user.username} user has left`)
       );
     }
-  });
-
-  socket.on('sendLocation', (url, cb) => {
-    io.emit('locationMessage', generateMessage(url));
-    cb();
   });
 });
 

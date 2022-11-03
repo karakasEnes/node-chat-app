@@ -20,14 +20,19 @@ const markupMaker = (isURL, messageObj) => {
   if (!isURL) {
     return `
     <div>
-    ${currentTime} - ${messageObj.text}
+      <div class="username-text">${messageObj.username}</div>
+      <div class="message">${currentTime} - ${messageObj.text}</div>
     </div>
     `;
   }
 
   return `
   <div>
-    ${currentTime} - <a href="${messageObj.text}" target="_blank">Your Location</a>
+      <div class="username-text">${messageObj.username}</div>
+      <div class="message">
+      ${currentTime} - <a href="${messageObj.text}" target="_blank">Your Location</a>
+      </div>
+    
   </div>
   `;
 };
@@ -42,7 +47,7 @@ socket.on('locationMessage', (messageObj) => {
   $messages.insertAdjacentHTML('beforeend', htmlMarkup);
 });
 
-btnMessage.addEventListener('click', (e) => {
+form.addEventListener('submit', (e) => {
   e.preventDefault();
 
   btnMessage.setAttribute('disabled', 'disabled');

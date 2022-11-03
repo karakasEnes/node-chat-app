@@ -10,7 +10,7 @@ import * as socketio from 'socket.io';
 import Filter from 'bad-words';
 //file imports
 import { generateMessage } from './utils/messages.js';
-import { addUser, removeUser } from './utils/users.js';
+import { getUser, addUser, removeUser } from './utils/users.js';
 //express Setup
 const app = express();
 const server = http.createServer(app);
@@ -32,10 +32,10 @@ io.on('connection', (socket) => {
             return callback(error);
         }
         socket.join(user.room);
-        socket.emit('message', generateMessage('Welcome to the SERVER!'));
+        socket.emit('message', generateMessage('Welcome to the SERVER!', 'Server'));
         socket.broadcast
             .to(user.room)
-            .emit('message', generateMessage(`${user.username} has joined to the room!`));
+            .emit('message', generateMessage(`${user.username} has joined to the room!`, 'Server'));
         callback();
     });
     socket.on('sendMessage', (m, cb) => {
@@ -43,18 +43,22 @@ io.on('connection', (socket) => {
         if (filter.isProfane(m)) {
             return cb('The message contains profanity words.');
         }
-        io.to('test').emit('message', generateMessage(m));
+        //setting for indivual room
+        const user = getUser(socket.id);
+        io.to(user.room).emit('message', generateMessage(m, user.username));
         cb(undefined, 'Message revecived by server');
+    });
+    socket.on('sendLocation', (url, cb) => {
+        //setting for indivual room
+        const user = getUser(socket.id);
+        io.to(user.room).emit('locationMessage', generateMessage(url, user.username));
+        cb();
     });
     socket.on('disconnect', () => {
         const user = removeUser(socket.id);
         if (user) {
             io.to(user.room).emit('message', generateMessage(`${user.username} user has left`));
         }
-    });
-    socket.on('sendLocation', (url, cb) => {
-        io.emit('locationMessage', generateMessage(url));
-        cb();
     });
 });
 server.listen(PORT, () => {
