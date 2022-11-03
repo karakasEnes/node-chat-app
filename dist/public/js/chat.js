@@ -5,6 +5,7 @@ const btnMessage = document.querySelector('.btn-form');
 const inputEl = document.querySelector('.input-form');
 const btnLocation = document.querySelector('.location');
 const $messages = document.querySelector('.messages');
+const $sidebar = document.querySelector('.sidebar');
 const { username, room } = Qs.parse(window.location.search, {
     ignoreQueryPrefix: true,
 });
@@ -28,6 +29,23 @@ const markupMaker = (isURL, messageObj) => {
   </div>
   `;
 };
+const markupSideBar = (roomData) => {
+    const { room, users } = roomData;
+    const roomEl = document.createElement('div');
+    roomEl.classList.add('room');
+    roomEl.innerHTML = room;
+    const usersEl = document.createElement('ul');
+    usersEl.classList.add('users');
+    users.forEach((user) => {
+        const userEl = document.createElement('li');
+        userEl.classList.add('user');
+        userEl.innerHTML = user.username;
+        usersEl.appendChild(userEl);
+    });
+    $sidebar.innerHTML = '';
+    $sidebar.appendChild(roomEl);
+    $sidebar.appendChild(usersEl);
+};
 socket.on('message', (messageObj) => {
     const htmlMarkup = markupMaker(false, messageObj);
     $messages.insertAdjacentHTML('beforeend', htmlMarkup);
@@ -35,6 +53,9 @@ socket.on('message', (messageObj) => {
 socket.on('locationMessage', (messageObj) => {
     const htmlMarkup = markupMaker(true, messageObj);
     $messages.insertAdjacentHTML('beforeend', htmlMarkup);
+});
+socket.on('roomData', (roomData) => {
+    markupSideBar(roomData);
 });
 form.addEventListener('submit', (e) => {
     e.preventDefault();

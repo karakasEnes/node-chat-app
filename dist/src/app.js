@@ -10,7 +10,7 @@ import * as socketio from 'socket.io';
 import Filter from 'bad-words';
 //file imports
 import { generateMessage } from './utils/messages.js';
-import { getUser, addUser, removeUser } from './utils/users.js';
+import { getUser, addUser, getUsersInRoom, removeUser } from './utils/users.js';
 //express Setup
 const app = express();
 const server = http.createServer(app);
@@ -36,6 +36,10 @@ io.on('connection', (socket) => {
         socket.broadcast
             .to(user.room)
             .emit('message', generateMessage(`${user.username} has joined to the room!`, 'Server'));
+        io.to(user.room).emit('roomData', {
+            room: user === null || user === void 0 ? void 0 : user.room,
+            users: getUsersInRoom(user.room),
+        });
         callback();
     });
     socket.on('sendMessage', (m, cb) => {
@@ -58,6 +62,10 @@ io.on('connection', (socket) => {
         const user = removeUser(socket.id);
         if (user) {
             io.to(user.room).emit('message', generateMessage(`${user.username} user has left`));
+            io.to(user.room).emit('roomData', {
+                room: user === null || user === void 0 ? void 0 : user.room,
+                users: getUsersInRoom(user.room),
+            });
         }
     });
 });
