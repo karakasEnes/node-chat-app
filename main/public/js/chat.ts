@@ -5,6 +5,9 @@ declare const Qs: any;
 
 const socket = io();
 
+import { GenerateMessageT } from '../../src/utils/messages';
+import { RoomDataT } from '../../src/utils/users';
+
 const form = document.querySelector('form') as HTMLFormElement;
 const btnMessage = document.querySelector('.btn-form') as HTMLButtonElement;
 const inputEl = document.querySelector('.input-form') as HTMLInputElement;
@@ -16,7 +19,7 @@ const { username, room } = Qs.parse(window.location.search, {
   ignoreQueryPrefix: true,
 });
 
-const markupMaker = (isURL, messageObj) => {
+const markupMaker = (isURL: boolean, messageObj: GenerateMessageT) => {
   const currentTime = moment(messageObj.createdAt).format('h:mm a');
   if (!isURL) {
     return `
@@ -38,7 +41,7 @@ const markupMaker = (isURL, messageObj) => {
   `;
 };
 
-const markupSideBar = (roomData) => {
+const markupSideBar = (roomData: RoomDataT) => {
   const { room, users } = roomData;
 
   const roomEl = document.createElement('div');
@@ -88,19 +91,19 @@ const autoscroll = () => {
   }
 };
 
-socket.on('message', (messageObj) => {
+socket.on('message', (messageObj: GenerateMessageT) => {
   const htmlMarkup = markupMaker(false, messageObj);
   $messages.insertAdjacentHTML('beforeend', htmlMarkup);
   autoscroll();
 });
 
-socket.on('locationMessage', (messageObj) => {
+socket.on('locationMessage', (messageObj: GenerateMessageT) => {
   const htmlMarkup = markupMaker(true, messageObj);
   $messages.insertAdjacentHTML('beforeend', htmlMarkup);
   autoscroll();
 });
 
-socket.on('roomData', (roomData) => {
+socket.on('roomData', (roomData: RoomDataT) => {
   markupSideBar(roomData);
 });
 
@@ -110,7 +113,7 @@ form.addEventListener('submit', (e) => {
   btnMessage.setAttribute('disabled', 'disabled');
 
   const value = inputEl.value;
-  socket.emit('sendMessage', value, (err, message) => {
+  socket.emit('sendMessage', value, (err?: string, message?: string) => {
     btnMessage.removeAttribute('disabled');
     inputEl.value = '';
     inputEl.focus();
@@ -139,10 +142,13 @@ btnLocation.addEventListener('click', () => {
   });
 });
 
-socket.emit('join', { username, room }, (error) => {
-  if (error) {
-    console.log(error);
-    alert(error);
-    location.href = '/';
+socket.emit(
+  'join',
+  { username, room } as { username: string; room: string },
+  (error: string): void => {
+    if (error) {
+      alert(error);
+      location.href = '/';
+    }
   }
-});
+);

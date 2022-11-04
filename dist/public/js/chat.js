@@ -1,4 +1,3 @@
-"use strict";
 const socket = io();
 const form = document.querySelector('form');
 const btnMessage = document.querySelector('.btn-form');
@@ -107,8 +106,8 @@ btnLocation.addEventListener('click', () => {
 });
 socket.emit('join', { username, room }, (error) => {
     if (error) {
-        console.log(error);
         alert(error);
         location.href = '/';
     }
 });
+export {};

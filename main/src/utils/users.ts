@@ -1,6 +1,20 @@
-export const users = [];
+export type UserT = {
+  id: string;
+  username: string;
+  room: string;
+};
 
-export const addUser = ({ id, username, room }) => {
+export type RoomDataT = {
+  room: UserT['room'];
+  users: UserT[];
+};
+
+export const users: UserT[] = [];
+
+export function addUser({ id, username, room }: UserT): {
+  error?: string;
+  user?: UserT;
+} {
   // Clean the data
   username = username.trim().toLowerCase();
   room = room.trim().toLowerCase();
@@ -28,9 +42,9 @@ export const addUser = ({ id, username, room }) => {
   const user = { id, username, room };
   users.push(user);
   return { user };
-};
+}
 
-export const removeUser = (id) => {
+export const removeUser = (id: string): UserT | void => {
   const index = users.findIndex((user) => user.id === id);
 
   if (index !== -1) {
@@ -38,11 +52,11 @@ export const removeUser = (id) => {
   }
 };
 
-export const getUser = (id) => {
-  return users.find((user) => user.id === id);
+export const getUser = (id: string): UserT => {
+  return users.find((user) => user.id === id)!;
 };
 
-export const getUsersInRoom = (room) => {
+export const getUsersInRoom = (room: string): UserT[] => {
   room = room.trim().toLowerCase();
   return users.filter((user) => user.room === room);
 };

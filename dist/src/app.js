@@ -23,24 +23,24 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDirectoryPath = path.join(__dirname, '../public');
 app.use(express.static(publicDirectoryPath));
-//io
 io.on('connection', (socket) => {
-    console.log('New Web Socket connection!');
     socket.on('join', ({ username, room }, callback) => {
         const { error, user } = addUser({ id: socket.id, username, room });
         if (error) {
             return callback(error);
         }
-        socket.join(user.room);
-        socket.emit('message', generateMessage('Welcome to the SERVER!', 'Server'));
-        socket.broadcast
-            .to(user.room)
-            .emit('message', generateMessage(`${user.username} has joined to the room!`, 'Server'));
-        io.to(user.room).emit('roomData', {
-            room: user === null || user === void 0 ? void 0 : user.room,
-            users: getUsersInRoom(user.room),
-        });
-        callback();
+        if (user) {
+            socket.join(user.room);
+            socket.emit('message', generateMessage('Welcome to the SERVER!', 'Server'));
+            socket.broadcast
+                .to(user.room)
+                .emit('message', generateMessage(`${user.username} has joined to the room!`, 'Server'));
+            io.to(user.room).emit('roomData', {
+                room: user === null || user === void 0 ? void 0 : user.room,
+                users: getUsersInRoom(user.room),
+            });
+            callback();
+        }
     });
     socket.on('sendMessage', (m, cb) => {
         const filter = new Filter();
@@ -61,9 +61,9 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         const user = removeUser(socket.id);
         if (user) {
-            io.to(user.room).emit('message', generateMessage(`${user.username} user has left`));
+            io.to(user.room).emit('message', generateMessage(`${user.username} user has left`, 'Server'));
             io.to(user.room).emit('roomData', {
-                room: user === null || user === void 0 ? void 0 : user.room,
+                room: user.room,
                 users: getUsersInRoom(user.room),
             });
         }

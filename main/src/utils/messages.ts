@@ -1,6 +1,15 @@
-export const generateMessage = (text, username) => {
+export type GenerateMessageT = {
+  username: string;
+  text: string;
+  createdAt: number;
+};
+
+export const generateMessage = (
+  text: string,
+  username: string
+): GenerateMessageT => {
   return {
-    username
+    username,
     text,
     createdAt: new Date().getTime(),
   };

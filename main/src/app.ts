@@ -12,6 +12,7 @@ import Filter from 'bad-words';
 //file imports
 import { generateMessage } from './utils/messages.js';
 import { getUser, addUser, getUsersInRoom, removeUser } from './utils/users.js';
+import { RoomDataT } from './utils/users.js';
 //express Setup
 const app: express.Application = express();
 const server = http.createServer(app);
@@ -28,50 +29,73 @@ const publicDirectoryPath = path.join(__dirname, '../public');
 app.use(express.static(publicDirectoryPath));
 
 //io
+
+type UsernameAndRoomT = {
+  username: string;
+  room: string;
+};
+
 io.on('connection', (socket) => {
-  console.log('New Web Socket connection!');
+  socket.on(
+    'join',
+    (
+      { username, room }: UsernameAndRoomT,
+      callback: (error?: string) => void
+    ) => {
+      const { error, user } = addUser({ id: socket.id, username, room });
 
-  socket.on('join', ({ username, room }, callback) => {
-    const { error, user } = addUser({ id: socket.id, username, room });
+      if (error) {
+        return callback(error);
+      }
 
-    if (error) {
-      return callback(error);
+      if (user) {
+        socket.join(user.room);
+        socket.emit(
+          'message',
+          generateMessage('Welcome to the SERVER!', 'Server')
+        );
+
+        socket.broadcast
+          .to(user.room)
+          .emit(
+            'message',
+            generateMessage(
+              `${user.username} has joined to the room!`,
+              'Server'
+            )
+          );
+
+        io.to(user.room).emit('roomData', {
+          room: user?.room,
+          users: getUsersInRoom(user.room),
+        });
+
+        callback();
+      }
     }
+  );
 
-    socket.join(user.room);
+  socket.on(
+    'sendMessage',
+    (
+      m: string,
+      cb: (e?: string, message?: string) => void | { err: string }
+    ) => {
+      const filter = new Filter();
 
-    socket.emit('message', generateMessage('Welcome to the SERVER!', 'Server'));
+      if (filter.isProfane(m)) {
+        return cb('The message contains profanity words.');
+      }
 
-    socket.broadcast
-      .to(user.room)
-      .emit(
-        'message',
-        generateMessage(`${user.username} has joined to the room!`, 'Server')
-      );
+      //setting for indivual room
+      const user = getUser(socket.id);
 
-    io.to(user.room).emit('roomData', {
-      room: user?.room,
-      users: getUsersInRoom(user.room),
-    });
-
-    callback();
-  });
-
-  socket.on('sendMessage', (m, cb) => {
-    const filter = new Filter();
-
-    if (filter.isProfane(m)) {
-      return cb('The message contains profanity words.');
+      io.to(user.room).emit('message', generateMessage(m, user.username));
+      cb(undefined, 'Message revecived by server');
     }
+  );
 
-    //setting for indivual room
-    const user = getUser(socket.id);
-
-    io.to(user.room).emit('message', generateMessage(m, user.username));
-    cb(undefined, 'Message revecived by server');
-  });
-
-  socket.on('sendLocation', (url, cb) => {
+  socket.on('sendLocation', (url: string, cb: () => void) => {
     //setting for indivual room
     const user = getUser(socket.id);
 
@@ -88,13 +112,13 @@ io.on('connection', (socket) => {
     if (user) {
       io.to(user.room).emit(
         'message',
-        generateMessage(`${user.username} user has left`)
+        generateMessage(`${user.username} user has left`, 'Server')
       );
 
       io.to(user.room).emit('roomData', {
-        room: user?.room,
+        room: user.room,
         users: getUsersInRoom(user.room),
-      });
+      } as RoomDataT);
     }
   });
 });

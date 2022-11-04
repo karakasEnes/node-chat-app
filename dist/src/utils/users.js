@@ -1,5 +1,5 @@
 export const users = [];
-export const addUser = ({ id, username, room }) => {
+export function addUser({ id, username, room }) {
     // Clean the data
     username = username.trim().toLowerCase();
     room = room.trim().toLowerCase();
@@ -23,7 +23,7 @@ export const addUser = ({ id, username, room }) => {
     const user = { id, username, room };
     users.push(user);
     return { user };
-};
+}
 export const removeUser = (id) => {
     const index = users.findIndex((user) => user.id === id);
     if (index !== -1) {
